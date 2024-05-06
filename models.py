@@ -188,7 +188,7 @@ class Message(db.Model):
     timestamp = db.Column(
         db.DateTime,
         nullable=False,
-        default=datetime.utcnow(),
+        default=datetime.now(),
     )
 
     user_id = db.Column(
