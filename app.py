@@ -1,4 +1,5 @@
 import os
+import pdb
 
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
@@ -116,6 +117,9 @@ def logout():
     """Handle logout of user."""
 
     # IMPLEMENT THIS
+    session.clear()
+    flash("You have been logged out", 'success')
+    return redirect("/login")
 
 
 ##############################################################################
@@ -152,12 +156,19 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, messages=messages)
+    
+    bio = user.bio
+    location = user.location
+    header_image_url = user.header_image_url
+    return render_template('users/show.html', user=user, messages=messages, bio=bio, location = location, header_image_url=header_image_url)
 
 
 @app.route('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
+
+    """Setting a debugger here"""
+    pdb.set_trace()
 
     if not g.user:
         flash("Access unauthorized.", "danger")
