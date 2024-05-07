@@ -4,6 +4,7 @@ import pdb
 from flask import Flask, render_template, request, flash, redirect, session, g, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import or_
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
 from models import db, connect_db, User, Message
@@ -119,7 +120,6 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    # IMPLEMENT THIS
     session.clear()
     flash("You have been logged out", 'success')
     return redirect("/login")
@@ -324,10 +324,13 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
+    # Get the IDs of users that the logged-in user is following
+    following_ids = [user.id for user in g.user.following]
 
     if g.user:
         messages = (Message
-                    .query
+                    .query.
+                    filter(or_(Message.user_id.in_(following_ids), Message.user_id == g.user.id))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
