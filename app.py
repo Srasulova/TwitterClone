@@ -157,10 +157,7 @@ def users_show(user_id):
                 .limit(100)
                 .all())
     
-    bio = user.bio
-    location = user.location
-    header_image_url = user.header_image_url
-    return render_template('users/show.html', user=user, messages=messages, bio=bio, location = location, header_image_url=header_image_url)
+    return render_template('users/show.html', user=user, messages=messages)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -168,7 +165,7 @@ def show_following(user_id):
     """Show list of people this user is following."""
 
     """Setting a debugger here"""
-    pdb.set_trace()
+    # pdb.set_trace()
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -221,8 +218,14 @@ def stop_following(follow_id):
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+def profile(user_id):
     """Update profile for current user."""
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = User.query.get_or_404(user_id)
+
 
     # IMPLEMENT THIS
 
