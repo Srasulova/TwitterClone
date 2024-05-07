@@ -245,7 +245,7 @@ def profile(user_id):
         flash("Profile updated successfully!", "success")
         return redirect(f'/users/{user_id}')
 
-    return render_template('users/detail.html', user=user, user_id=user.id, form=form)
+    return render_template('users/edit.html', user=user, user_id=user.id, form=form)
 
 
 @app.route('/users/delete', methods=["POST"])
