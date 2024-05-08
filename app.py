@@ -347,11 +347,22 @@ def toggle_like(message_id):
     return redirect('/')
 
 
+
+@app.route('/users/<int:user_id>/likes')
+def show_likes(user_id):
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = User.query.get_or_404(user_id)
+
+    liked_messages = Message.query.join(Likes).filter(Likes.user_id == user_id).all()
+    
+    return render_template('users/likes.html', user=user, liked_messages=liked_messages)
+
+
 ##############################################################################
 # Homepage and error pages
-
-
-
 
 
 @app.route('/')
