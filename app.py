@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 
 from flask_bcrypt import Bcrypt
 bcrypt = Bcrypt()
@@ -312,9 +312,46 @@ def messages_destroy(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
+##############################################################################
+# Likes routes:
+
+@app.route('/users/add_like/<int:message_id>', methods=["POST"])
+def toggle_like(message_id):
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    message = Message.query.get(message_id)
+
+    if not message:
+        flash("Message not found.", "danger")
+        return redirect("/")
+    
+    # Check if the user is trying to like their own message
+    if message.user_id == g.user.id:
+        flash("You cannot like your own message.", "danger")
+        return redirect("/")
+    
+    # Check if the user has already liked this message
+    already_liked = Likes.query.filter_by(user_id = g.user.id, message_id = message_id).first()
+
+    #If the user already liked the message it can be disliked
+    if already_liked:
+        db.session.delete(already_liked)
+    else:
+        # Add a new like for the current user and message
+        like = Likes(user_id = g.user.id, message_id=message_id)
+        db.session.add(like)
+        
+    db.session.commit()
+    return redirect('/')
+
 
 ##############################################################################
 # Homepage and error pages
+
+
+
 
 
 @app.route('/')
@@ -327,6 +364,8 @@ def homepage():
     # Get the IDs of users that the logged-in user is following
     following_ids = [user.id for user in g.user.following]
 
+    
+
     if g.user:
         messages = (Message
                     .query.
@@ -334,8 +373,10 @@ def homepage():
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
+        # Get the IDs of messages that the user has liked
+        liked_messages = g.user.likes
 
-        return render_template('home.html', messages=messages)
+        return render_template('home.html', messages=messages, likes=[msg.id for msg in liked_messages])
 
     else:
         return render_template('home-anon.html')
