@@ -15,7 +15,7 @@ from models import db, User, Message, Follows
 # before we import our app, since that will have already
 # connected to the database
 
-os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
+os.environ['DATABASE_URL'] = 'postgresql://postgres:Milagros@localhost/warbler-test'
 
 
 # Now we can import app
@@ -26,7 +26,9 @@ from app import app
 # once for all tests --- in each test, we'll delete the data
 # and create fresh new clean test data
 
-db.create_all()
+
+with app.app_context():
+   db.create_all()
 
 
 class UserModelTestCase(TestCase):
@@ -34,25 +36,28 @@ class UserModelTestCase(TestCase):
 
     def setUp(self):
         """Create test client, add sample data."""
+        with app.app_context():
 
-        User.query.delete()
-        Message.query.delete()
-        Follows.query.delete()
+            User.query.delete()
+            Message.query.delete()
+            Follows.query.delete()
 
-        self.client = app.test_client()
+            self.client = app.test_client()
 
     def test_user_model(self):
         """Does basic model work?"""
 
-        u = User(
-            email="test@test.com",
-            username="testuser",
-            password="HASHED_PASSWORD"
+        with app.app_context():
+
+            u = User(
+                email="aliya@test.com",
+                username="aliya",
+                password="HASHED_PASSWORDDddd"
         )
 
-        db.session.add(u)
-        db.session.commit()
+            db.session.add(u)
+            db.session.commit()
 
         # User should have no messages & no followers
-        self.assertEqual(len(u.messages), 0)
-        self.assertEqual(len(u.followers), 0)
+            self.assertEqual(len(u.messages), 0)
+            self.assertEqual(len(u.followers), 0)
