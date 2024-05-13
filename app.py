@@ -372,12 +372,10 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-    # Get the IDs of users that the logged-in user is following
-    following_ids = [user.id for user in g.user.following]
-
-    
-
     if g.user:
+        # Get the IDs of users that the logged-in user is following
+        following_ids = [user.id for user in g.user.following]
+        
         messages = (Message
                     .query.
                     filter(or_(Message.user_id.in_(following_ids), Message.user_id == g.user.id))
@@ -386,6 +384,8 @@ def homepage():
                     .all())
         # Get the IDs of messages that the user has liked
         liked_messages = g.user.likes
+
+        
 
         return render_template('home.html', messages=messages, likes=[msg.id for msg in liked_messages])
 
