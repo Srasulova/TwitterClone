@@ -1,5 +1,6 @@
 """SQLAlchemy models for Warbler."""
 
+from csv import DictReader
 from datetime import datetime
 
 from flask_bcrypt import Bcrypt
@@ -8,6 +9,13 @@ from flask_sqlalchemy import SQLAlchemy
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
+class MyDateTime(db.TypeDecorator):
+    impl = db.DateTime
+
+    def process_bind_param(self, value, dialect):
+        if type(value) is str:
+            return datetime.strptime(value, '%Y-%m-%d %H:%M:%S.%f')
+        return value
 
 class Follows(db.Model):
     """Connection of a follower <-> followed_user."""
@@ -186,7 +194,7 @@ class Message(db.Model):
     )
 
     timestamp = db.Column(
-        db.DateTime,
+        MyDateTime,
         nullable=False,
         default=datetime.now(),
     )
@@ -208,3 +216,21 @@ def connect_db(app):
 
     db.app = app
     db.init_app(app)
+
+    # Seed database if no records are present in the User, Message, or Follows table
+    if len(User.query.all()) == 0 or len(Message.query.all()) == 0 or len(Follows.query.all()) == 0:
+        db.drop_all()
+        db.create_all()
+
+        with open('generator/users.csv') as users:
+            db.session.bulk_insert_mappings(User, DictReader(users))
+
+        with open('generator/messages.csv') as messages:
+            db.session.bulk_insert_mappings(Message, DictReader(messages))
+
+        with open('generator/follows.csv') as follows:
+            db.session.bulk_insert_mappings(Follows, DictReader(follows))
+
+        db.session.commit()
+    
+
