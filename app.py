@@ -231,8 +231,8 @@ def profile(user_id):
             flash("Incorrect password. Profile update failed", "danger")
             return redirect("/")
         
-        user.username=form.username.data,
-        user.email=form.email.data,
+        user.username=form.username.data
+        user.email=form.email.data
         user.image_url=form.image_url.data
         user.header_image_url=form.header_image_url.data
         user.bio = form.bio.data
